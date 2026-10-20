@@ -1,0 +1,73 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import { GIG_CAP, REQUEST_CAP, TICK_GIG_VIEWS, overActiveCap } from "./caps.ts";
+import { HELP_FAQ } from "./help-faq.ts";
+import { PRIVACY, TERMS } from "./legal-copy.ts";
+
+test("active caps block the next listing only", () => {
+  assert.equal(overActiveCap(GIG_CAP - 1, GIG_CAP), false);
+  assert.equal(overActiveCap(GIG_CAP, GIG_CAP), true);
+  assert.equal(overActiveCap(REQUEST_CAP, REQUEST_CAP), true);
+  assert.equal(overActiveCap(3, REQUEST_CAP), false);
+  assert.equal(TICK_GIG_VIEWS, 5000);
+});
+
+test("help center states the listing clocks and gig-only tick", () => {
+  assert.equal(HELP_FAQ.length, 9);
+  const gigs = HELP_FAQ.find((item) => item.q === "How many Gigs can I post?");
+  const requests = HELP_FAQ.find((item) => item.q === "How many Job Boards can I post?");
+  const tick = HELP_FAQ.find((item) => item.q === "What is Blue Tick eligibility?");
+  const stay = HELP_FAQ.find((item) => item.q === "How long do gigs and boards stay?");
+  const gone = HELP_FAQ.find((item) => item.q === "When Blue Tick removes?");
+  const gigStay = HELP_FAQ.find((item) => item.q === "How long Gig stays?");
+  const fees = HELP_FAQ.find((item) => item.q === "What are fees?");
+  const report = HELP_FAQ.find((item) => item.q === "How does reporting and messaging work?");
+  assert.match(gigs?.a ?? "", /3 active/);
+  assert.match(gigs?.a ?? "", /remain active until deleted/);
+  assert.equal(/90 days/.test(gigs?.a ?? ""), false);
+  assert.match(requests?.a ?? "", /5 active/);
+  assert.match(requests?.a ?? "", /remain active until deleted/);
+  assert.equal(/30 days/.test(requests?.a ?? ""), false);
+  assert.match(tick?.a ?? "", /5,000 gig views/);
+  assert.match(tick?.a ?? "", /do not count/);
+  assert.match(tick?.a ?? "", /never on boards/);
+  assert.match(stay?.a ?? "", /remain active until deleted/);
+  assert.equal(/90 days|30 days|deleted after|forever/.test(stay?.a ?? ""), false);
+  assert.equal(gone?.a, "Blue Tick never auto-removes. It remains active until you delete a gig and total views fall below 2000, when it is removed.");
+  assert.equal(gigStay?.a, "Gigs remain active until you delete them.");
+  assert.match(fees?.a ?? "", /\$3/);
+  assert.match(fees?.a ?? "", /\$2 for 24 hours/);
+  assert.match(fees?.a ?? "", /\$6 for 7 days/);
+  assert.match(fees?.a ?? "", /\$20 for 30 days/);
+  assert.match(fees?.a ?? "", /15%/);
+  assert.match(report?.a ?? "", /Wait for reply/);
+  assert.match(report?.a ?? "", /Spam/);
+  assert.equal(HELP_FAQ.some((item) => /10[,.]?000|10k/i.test(`${item.q} ${item.a}`)), false);
+  assert.match(tick?.a ?? "", /\$2\.50/);
+  assert.match(tick?.a ?? "", /2000/);
+  const help = HELP_FAQ.map((item) => `${item.q} ${item.a}`).join("\n");
+  assert.equal(/founder room|follow system|server function|gold edge|@moazam/i.test(help), false);
+});
+
+test("privacy and terms stay short and public", () => {
+  const privacy = PRIVACY.map((item) => `${item.h} ${item.p}`).join("\n");
+  const terms = TERMS.map((item) => `${item.h} ${item.p}`).join("\n");
+  const text = `${privacy}\n${terms}`;
+  assert.equal(PRIVACY.length, 7);
+  assert.equal(TERMS.length, 6);
+  assert.equal(/jazzcash|easypaisa|payoneer|usdt|wise|server function|gold edge|screenshot|followers|2,000|4,999|gig limit reached/i.test(text), false);
+  assert.equal(/10[,.]?000|10k/i.test(text), false);
+  assert.match(text, /5,000 gig views/);
+  assert.match(text, /\$3/);
+  assert.match(text, /\$2/);
+  assert.match(text, /\$6/);
+  assert.match(text, /\$20/);
+  assert.match(text, /\$2\.50/);
+  assert.match(text, /15%/);
+  assert.match(text, /remain active until deleted/);
+  assert.match(text, /30 days/);
+  const help = HELP_FAQ.map((item) => `${item.q} ${item.a}`).join("\n");
+  assert.equal(/jazzcash|server function|gold edge|founder room/i.test(help), false);
+  assert.match(help, /never auto-removes/);
+  assert.match(help, /5,000/);
+});
