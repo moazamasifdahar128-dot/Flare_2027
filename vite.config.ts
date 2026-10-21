@@ -191,7 +191,7 @@ export default defineConfig(({ command, isPreview }) => ({
     apkDownloadPlugin(),
     pgliteBootstrapPlugin(),
     authPopupPlugin(),
-    grokPwaPlugin(),
+    
     tailwindcss(),
     tanstackStart(),
     ...(command === "build" || isPreview
