@@ -7,7 +7,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
-import { grokPwaPlugin } from "./scripts/grok-pwa-plugin.mjs";
+
 
 /** Same rule as scripts/migration-plan.mjs — inlined so the config bundles on Vercel. */
 function isMigrationFile(path: string): boolean {
